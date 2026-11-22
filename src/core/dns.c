@@ -352,6 +352,24 @@ dns_init(void)
 
 /**
  * @ingroup dns
+ * Drop every resolved (DNS_STATE_DONE) entry from the DNS cache, so the next
+ * lookup of a name goes to the currently configured servers (e.g. after
+ * dns_setserver() switched resolvers). Queries still in flight are left alone.
+ */
+void
+dns_clear_cache(void)
+{
+  u8_t i;
+  LWIP_ASSERT_CORE_LOCKED();
+  for (i = 0; i < DNS_TABLE_SIZE; i++) {
+    if (dns_table[i].state == DNS_STATE_DONE) {
+      dns_table[i].state = DNS_STATE_UNUSED;
+    }
+  }
+}
+
+/**
+ * @ingroup dns
  * Initialize one of the DNS servers.
  *
  * @param numdns the index of the DNS server to set must be < DNS_MAX_SERVERS
